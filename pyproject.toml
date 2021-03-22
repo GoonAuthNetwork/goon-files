@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "goon-files"
+version = "0.1.0"
+description = ""
+authors = ["Ian P <ian@aotc.us>"]
+repository = "https://github.com/GoonAuthNetwork/goon-files"
+license = "GPL-3.0"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.2"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

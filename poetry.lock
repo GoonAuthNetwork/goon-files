@@ -170,6 +170,21 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "odmantic"
+version = "0.3.4"
+description = "ODMantic, an AsyncIO MongoDB Object Document Mapper for Python using type hints "
+category = "main"
+optional = false
+python-versions = ">=3.6,<4.0"
+
+[package.dependencies]
+motor = ">=2.1.0,<2.4.0"
+pydantic = ">=1.6.0,<1.9.0"
+
+[package.extras]
+fastapi = ["fastapi (>=0.61.1,<0.64.0)"]
+
+[[package]]
 name = "packaging"
 version = "20.9"
 description = "Core utilities for Python packages"
@@ -377,7 +392,7 @@ dev = ["pytest (>=4.6.2)", "black (>=19.3b0)"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "658975d86142aba78f231ea2318a876f129130a6a1d88a3968784f499b06fa82"
+content-hash = "b93221226831690fe0548103d8cb6f65e894239780e4b5f9a6aa2fb36f3ab3fd"
 
 [metadata.files]
 appdirs = [
@@ -438,6 +453,10 @@ motor = [
 mypy-extensions = [
     {file = "mypy_extensions-0.4.3-py2.py3-none-any.whl", hash = "sha256:090fedd75945a69ae91ce1303b5824f428daf5a028d2f6ab8a299250a846f15d"},
     {file = "mypy_extensions-0.4.3.tar.gz", hash = "sha256:2d82818f5bb3e369420cb3c4060a7970edba416647068eb4c5343488a6c604a8"},
+]
+odmantic = [
+    {file = "ODMantic-0.3.4-py3-none-any.whl", hash = "sha256:1221322cc3725b71806f0a5d708aa78da1ad631b71368d7a2318105a13a38e76"},
+    {file = "ODMantic-0.3.4.tar.gz", hash = "sha256:314724ba384c91ac13a5bfdf4a5da5c0ce5425760f6a06d63441b701337bb95d"},
 ]
 packaging = [
     {file = "packaging-20.9-py2.py3-none-any.whl", hash = "sha256:67714da7f7bc052e064859c05c595155bd1ee9f69f76557e21f051443c20947a"},

@@ -38,8 +38,7 @@ LOGGING_CONFIG = {
     "level": os.getenv("LOGGING_LEVEL", "info"),
     "format": os.getenv(
         "LOGGING_FORMAT",
-        "<level>{level: <8}</level> <green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green>"
-        + " request id: {extra[request_id]} - <cyan>{name}</cyan>:"
-        + "<cyan>{function}</cyan> - <level>{message}</level>",
+        "<level>{level: <8}</level> <green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> "
+        + "<cyan>{name}</cyan>:<cyan>{function}</cyan> - <level>{message}</level>",
     ),
 }

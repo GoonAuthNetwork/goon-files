@@ -1,5 +1,4 @@
-import logging
-
+from loguru import logger
 from motor.motor_asyncio import AsyncIOMotorClient
 
 from . import config
@@ -17,16 +16,16 @@ async def get_database() -> AsyncIOMotorClient:
 
 
 async def connect_to_mongo() -> None:
-    logging.info("Connecting to database...")
+    logger.info("Connecting to database...")
     db.client = AsyncIOMotorClient(
         config.DB_CONNECTION_URL,
         maxPoolSize=config.DB_MAX_CONNECTIONS_COUNT,
         minPoolSize=config.DB_MIN_CONNECTIONS_COUNT,
     )
-    logging.info("Database connected!")
+    logger.info("Database connected!")
 
 
 async def close_mongo_connection() -> None:
-    logging.info("Closing database connection...")
+    logger.info("Closing database connection...")
     db.client.close()
-    logging.info("Database closed!")
+    logger.info("Database closed!")

@@ -31,8 +31,9 @@ class InterceptHandler(logging.Handler):
             frame = frame.f_back
             depth += 1
 
-        log = logger.bind(request_id="app")
-        log.opt(depth=depth, exception=record.exc_info).log(level, record.getMessage())
+        logger.opt(depth=depth, exception=record.exc_info).log(
+            level, record.getMessage()
+        )
 
 
 class CustomizeLogger:
@@ -76,10 +77,10 @@ class CustomizeLogger:
             )
 
         logging.basicConfig(handlers=[InterceptHandler()], level=0)
-        logging.getLogger("uvicorn.access").handlers = [InterceptHandler()]
 
-        for _log in ["uvicorn", "uvicorn.error", "fastapi"]:
+        for _log in ["uvicorn", "uvicorn.access", "uvicorn.error", "fastapi"]:
             _logger = logging.getLogger(_log)
+            _logger.propagate = False
             _logger.handlers = [InterceptHandler()]
 
         return logger.bind(request_id=None, method=None)

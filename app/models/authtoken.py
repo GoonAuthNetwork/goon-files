@@ -1,6 +1,7 @@
 from enum import Enum
 from typing import Optional
 from odmantic import EmbeddedModel
+import pydantic
 
 
 class Service(str, Enum):
@@ -16,6 +17,12 @@ class AuthToken(EmbeddedModel):
         info (Optional[str]): Optional information about the service and/or token
     """
 
+    service: Service
+    token: str
+    info: Optional[str]
+
+
+class NewAuthToken(pydantic.BaseModel):
     service: Service
     token: str
     info: Optional[str]

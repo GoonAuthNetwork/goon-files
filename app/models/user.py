@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import List, Optional
 from odmantic import Model
+import pydantic
 
 from .authtoken import AuthToken
 
@@ -22,3 +23,12 @@ class User(Model):
     permaBanned: Optional[datetime]
     services: Optional[List[AuthToken]]
     createdAt: datetime
+
+
+class NewUser(pydantic.BaseModel):
+    userId: int = pydantic.Field(..., title="SA User Id", gt=0)
+    userName: str = pydantic.Field(
+        ..., title="SA Username", min_length=3, max_length=18, regex="^[\x00-\x7F]+$"
+    )
+    regDate: datetime
+    services: Optional[List[AuthToken]]

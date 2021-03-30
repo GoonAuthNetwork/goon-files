@@ -2,13 +2,13 @@ from datetime import datetime
 from fastapi import APIRouter
 from fastapi.exceptions import HTTPException
 
-from ..models.user import User
-from ..models.authtoken import AuthToken, Service
+from ..models.user import NewUser, User
+from ..models.authtoken import AuthToken, NewAuthToken, Service
 from ..mongodb import db
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
-
+"""
 @router.get("/")
 async def root_auth():
 
@@ -38,6 +38,7 @@ async def root_auth():
     await db.engine.save_all(instances)
 
     return {"message": "Hello auth"}
+"""
 
 
 @router.post(
@@ -46,8 +47,18 @@ async def root_auth():
     response_model_exclude={"id"},
     summary="Creates a User with the specified information",
 )
-async def create_user():
-    pass
+async def create_user(new_user: NewUser) -> User:
+    user: User = User(
+        userId=new_user.userId,
+        userName=new_user.userName,
+        regDate=new_user.regDate,
+        createdAt=datetime.now(),
+    )
+
+    if "services" in new_user and len(new_user.services) > 0:
+        user.services = new_user.services
+
+    return await db.engine.save(user)
 
 
 @router.get(
@@ -82,3 +93,29 @@ async def get_service_for_user(user_id: int, service: Service) -> AuthToken:
             return _service
 
     raise HTTPException(404, "Service not found for specified user")
+
+
+@router.put(
+    "/{user_id}/service", response_model=User, summary="Adds an AuthToken to the User"
+)
+async def add_service_for_user(user_id: int, new_authtoken: NewAuthToken):
+    # Create the auth token
+    authtoken: AuthToken = AuthToken(
+        service=new_authtoken.service, token=new_authtoken.token
+    )
+
+    if "info" in new_authtoken and len(new_authtoken.info) > 0:
+        authtoken.info = new_authtoken.info
+
+    # pull the user
+    user: User = await db.engine.find(User, User.userId == user_id)
+
+    # Check if we're updating
+    for i in range(len(user.services)):
+        if user.services[i].service == authtoken.service:
+            user.services[i] = authtoken
+            return await db.engine.save(user)
+
+    # Or else add it
+    user.services.append(authtoken)
+    return await db.engine.save(user)

@@ -10,7 +10,7 @@
             "request": "launch",
             "module": "uvicorn",
             "args": [
-                "goon_files.server:app",
+                "app.main:app",
                 "--reload"
             ],
             "env": {

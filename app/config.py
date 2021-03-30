@@ -24,7 +24,7 @@ if DB_CONNECTION_URL is None:
 
     DB_CONNECTION_URL = (
         f"mongodb://{DB_MONGO_USER}:{DB_MONGO_PASS}@"
-        + f"{DB_MONGO_HOST}:{DB_MONGO_PORT}/{DB_MONGO_DB_NAME}"
+        + f"{DB_MONGO_HOST}:{DB_MONGO_PORT}/"
     )
 
 # Logger settings

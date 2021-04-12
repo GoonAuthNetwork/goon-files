@@ -1,9 +1,9 @@
 from fastapi import APIRouter
 from fastapi.exceptions import HTTPException
 
-from ..models.user import NewUser, User, UserInDb
-from ..models.service_token import Service, ServiceToken, NewServiceToken
-from ..mongodb import db
+from app.models.user import NewUser, User, UserInDb
+from app.models.service_token import Service, ServiceToken, NewServiceToken
+from app.mongodb import db
 
 router = APIRouter(prefix="/user", tags=["auth"])
 

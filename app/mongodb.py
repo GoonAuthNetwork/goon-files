@@ -2,7 +2,7 @@ from loguru import logger
 from motor.motor_asyncio import AsyncIOMotorClient
 from odmantic import AIOEngine
 
-from . import config
+from app import config
 
 
 class Database:

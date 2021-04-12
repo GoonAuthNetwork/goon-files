@@ -2,7 +2,7 @@ import logging
 import sys
 from pathlib import Path
 from loguru import logger
-from .config import LOGGING_CONFIG
+from app.config import LOGGING_CONFIG
 
 """
 This file essentually taken from:

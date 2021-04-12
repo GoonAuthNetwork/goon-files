@@ -3,8 +3,7 @@ from typing import List, Optional
 import odmantic
 import pydantic
 
-from .service_token import ServiceToken
-
+from app.models.service_token import ServiceToken
 
 # Unfortunately we have to duplicate some data models
 # because Odmantic doesn't support inheritance, for some reason.

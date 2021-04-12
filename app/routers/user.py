@@ -1,8 +1,7 @@
-from datetime import datetime
 from fastapi import APIRouter
 from fastapi.exceptions import HTTPException
 
-from ..models.user import NewUser, User
+from ..models.user import NewUser, User, UserInDb
 from ..models.service_token import Service, ServiceToken, NewServiceToken
 from ..mongodb import db
 
@@ -48,15 +47,7 @@ async def root_auth():
     summary="Creates a User with the specified information",
 )
 async def create_user(new_user: NewUser) -> User:
-    user: User = User(
-        userId=new_user.userId,
-        userName=new_user.userName,
-        regDate=new_user.regDate,
-        createdAt=datetime.now(),
-    )
-
-    if "services" in new_user and len(new_user.services) > 0:
-        user.services = new_user.services
+    user: UserInDb = UserInDb(**new_user.dict())
 
     return await db.engine.save(user)
 
@@ -68,12 +59,12 @@ async def create_user(new_user: NewUser) -> User:
     summary="Gets a User for the specified user",
 )
 async def get_user(user_id: int) -> User:
-    user = await db.engine.find_one(User, User.userId == user_id)
+    user: UserInDb = await db.engine.find_one(UserInDb, UserInDb.userId == user_id)
 
     if user is None:
         raise HTTPException(404, "User not found")
 
-    return user
+    return user.to_basic_user()
 
 
 @router.get(
@@ -83,7 +74,7 @@ async def get_user(user_id: int) -> User:
 )
 async def get_service_for_user(user_id: int, service: Service) -> ServiceToken:
     query = {"userId": {"$eq": user_id}, "services.service": {"$eq": service.value}}
-    user = await db.engine.find_one(User, query)
+    user: UserInDb = await db.engine.find_one(UserInDb, query)
 
     if user is None:
         raise HTTPException(404, "User not found")
@@ -108,7 +99,7 @@ async def add_service_for_user(user_id: int, new_authtoken: NewServiceToken) -> 
         authtoken.info = new_authtoken.info
 
     # pull the user
-    user: User = await db.engine.find(User, User.userId == user_id)
+    user: UserInDb = await db.engine.find(UserInDb, UserInDb.userId == user_id)
 
     # Check if we're updating
     for i in range(len(user.services)):
@@ -118,4 +109,6 @@ async def add_service_for_user(user_id: int, new_authtoken: NewServiceToken) -> 
 
     # Or else add it
     user.services.append(authtoken)
-    return await db.engine.save(user)
+    result: UserInDb = await db.engine.save(user)
+
+    return result.to_basic_user()

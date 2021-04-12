@@ -1,28 +1,43 @@
 from datetime import datetime
 from typing import List, Optional
-from odmantic import Model
+import odmantic
 import pydantic
 
 from .service_token import ServiceToken
 
 
-class User(Model):
-    """Represents an authorized user
+# Unfortunately we have to duplicate some data models
+# because Odmantic doesn't support inheritance, for some reason.
+# Also have to use both pydantic and odmantic models seperately.
 
-    Attributes:
-        userid (int): Something Awful user id
-        username (str): Something Awful user name
-        reg_date (datetime): Date of registration on Something Awful
-        perma_banned (Optional[datetime]): Flag to tell if the user was permabanned
-        services (Optional[List[AuthToken]]): List of authed services
-    """
 
-    userId: int
-    userName: str
+class User(pydantic.BaseModel):
+    userId: int = pydantic.Field(..., title="SA User Id", gt=0)
+    userName: str = pydantic.Field(
+        ..., title="SA Username", min_length=3, max_length=18, regex="^[\x00-\x7F]+$"
+    )
     regDate: datetime
     permaBanned: Optional[datetime]
     services: Optional[List[ServiceToken]]
     createdAt: datetime
+
+
+class UserInDb(odmantic.Model):
+    userId: int = odmantic.Field(..., title="SA User Id", gt=0)
+    userName: str = odmantic.Field(
+        ..., title="SA Username", min_length=3, max_length=18, regex="^[\x00-\x7F]+$"
+    )
+    regDate: datetime
+    permaBanned: Optional[datetime]
+    services: Optional[List[ServiceToken]]
+
+    # Db Specific
+    # hashed_password: str
+    # api_token: str
+    # etc
+
+    def to_basic_user(self) -> User:
+        return User(**self.dict(), createdAt=self.id.generation_time)
 
 
 class NewUser(pydantic.BaseModel):

@@ -16,9 +16,13 @@ class User(pydantic.BaseModel):
     userName: str = pydantic.Field(
         ..., title="SA Username", min_length=3, max_length=18, regex="^[\x00-\x7F]+$"
     )
-    regDate: datetime
-    permaBanned: Optional[datetime]
-    services: Optional[List[ServiceToken]]
+    regDate: datetime = pydantic.Field(..., title="SA register date")
+    permaBanned: Optional[datetime] = pydantic.Field(
+        None, title="Date of if/when the user is permanently banned on SA"
+    )
+    services: Optional[List[ServiceToken]] = pydantic.Field(
+        None, title="List of autentication services for the user"
+    )
     createdAt: datetime
 
 
@@ -27,9 +31,13 @@ class UserInDb(odmantic.Model):
     userName: str = odmantic.Field(
         ..., title="SA Username", min_length=3, max_length=18, regex="^[\x00-\x7F]+$"
     )
-    regDate: datetime
-    permaBanned: Optional[datetime]
-    services: Optional[List[ServiceToken]]
+    regDate: datetime = odmantic.Field(..., title="SA register date")
+    permaBanned: Optional[datetime] = odmantic.Field(
+        None, title="Date of if/when the user is permanently banned on SA"
+    )
+    services: Optional[List[ServiceToken]] = odmantic.Field(
+        None, title="List of autentication services for the user"
+    )
 
     # Db Specific
     # hashed_password: str
@@ -37,6 +45,11 @@ class UserInDb(odmantic.Model):
     # etc
 
     def to_basic_user(self) -> User:
+        """Converts the object into a basic pydantic User model
+
+        Returns:
+            User: The basic user model
+        """
         return User(**self.dict(), createdAt=self.id.generation_time)
 
 
@@ -45,5 +58,7 @@ class NewUser(pydantic.BaseModel):
     userName: str = pydantic.Field(
         ..., title="SA Username", min_length=3, max_length=18, regex="^[\x00-\x7F]+$"
     )
-    regDate: datetime
-    services: Optional[List[ServiceToken]]
+    regDate: datetime = pydantic.Field(..., title="SA register date")
+    services: Optional[List[ServiceToken]] = pydantic.Field(
+        None, title="List of autentication services for the user"
+    )

@@ -7,55 +7,30 @@ from ..mongodb import db
 
 router = APIRouter(prefix="/user", tags=["auth"])
 
-"""
-@router.get("/")
-async def root_auth():
-
-    instances = [
-        User(
-            userId=42069,
-            userName="Goon 1",
-            services=[AuthToken(service=Service.DISCORD, token="Goon1#42069")],
-            regDate=datetime.now(),
-            createdAt=datetime.now(),
-        ),
-        User(
-            userId=42070,
-            userName="Goon 2",
-            services=[AuthToken(service=Service.DISCORD, token="Goon2#42070")],
-            regDate=datetime.now(),
-            createdAt=datetime.now(),
-        ),
-        User(
-            userId=42071,
-            userName="Goon 3",
-            services=[AuthToken(service=Service.DISCORD, token="Goon3#42071")],
-            regDate=datetime.now(),
-            createdAt=datetime.now(),
-        ),
-    ]
-    await db.engine.save_all(instances)
-
-    return {"message": "Hello auth"}
-"""
-
 
 @router.post(
     "/",
     response_model=User,
-    response_model_exclude={"id"},
     summary="Creates a User with the specified information",
 )
 async def create_user(new_user: NewUser) -> User:
+    # Check to make sure the user doesn't already exist
+    found = await db.engine.find_one(UserInDb, UserInDb.userId == new_user.userId)
+
+    if found:
+        raise HTTPException(409, "User already exists")
+
+    # add in hashed_password, etc eventually
     user: UserInDb = UserInDb(**new_user.dict())
 
-    return await db.engine.save(user)
+    new_user: UserInDb = await db.engine.save(user)
+
+    return new_user.to_basic_user()
 
 
 @router.get(
     "/{user_id}",
     response_model=User,
-    response_model_exclude={"id"},
     summary="Gets a User for the specified user",
 )
 async def get_user(user_id: int) -> User:

@@ -3,10 +3,10 @@ from fastapi import APIRouter
 from fastapi.exceptions import HTTPException
 
 from ..models.user import NewUser, User
-from ..models.authtoken import AuthToken, NewAuthToken, Service
+from ..models.service_token import Service, ServiceToken, NewServiceToken
 from ..mongodb import db
 
-router = APIRouter(prefix="/auth", tags=["auth"])
+router = APIRouter(prefix="/user", tags=["auth"])
 
 """
 @router.get("/")
@@ -78,10 +78,10 @@ async def get_user(user_id: int) -> User:
 
 @router.get(
     "/{user_id}/service",
-    response_model=AuthToken,
-    summary="Gets an AuthToken for the specified user and service",
+    response_model=ServiceToken,
+    summary="Gets an ServiceToken for the specified user and service",
 )
-async def get_service_for_user(user_id: int, service: Service) -> AuthToken:
+async def get_service_for_user(user_id: int, service: Service) -> ServiceToken:
     query = {"userId": {"$eq": user_id}, "services.service": {"$eq": service.value}}
     user = await db.engine.find_one(User, query)
 
@@ -98,9 +98,9 @@ async def get_service_for_user(user_id: int, service: Service) -> AuthToken:
 @router.put(
     "/{user_id}/service", response_model=User, summary="Adds an AuthToken to the User"
 )
-async def add_service_for_user(user_id: int, new_authtoken: NewAuthToken):
+async def add_service_for_user(user_id: int, new_authtoken: NewServiceToken) -> User:
     # Create the auth token
-    authtoken: AuthToken = AuthToken(
+    authtoken: ServiceToken = ServiceToken(
         service=new_authtoken.service, token=new_authtoken.token
     )
 

@@ -3,7 +3,7 @@ from typing import List, Optional
 from odmantic import Model
 import pydantic
 
-from .authtoken import AuthToken
+from .service_token import ServiceToken
 
 
 class User(Model):
@@ -21,7 +21,7 @@ class User(Model):
     userName: str
     regDate: datetime
     permaBanned: Optional[datetime]
-    services: Optional[List[AuthToken]]
+    services: Optional[List[ServiceToken]]
     createdAt: datetime
 
 
@@ -31,4 +31,4 @@ class NewUser(pydantic.BaseModel):
         ..., title="SA Username", min_length=3, max_length=18, regex="^[\x00-\x7F]+$"
     )
     regDate: datetime
-    services: Optional[List[AuthToken]]
+    services: Optional[List[ServiceToken]]

@@ -8,7 +8,7 @@ class Service(str, Enum):
     DISCORD = "discord"
 
 
-class AuthToken(EmbeddedModel):
+class ServiceToken(EmbeddedModel):
     """Contains the information required to authenticate a user
 
     Attributes:
@@ -22,7 +22,7 @@ class AuthToken(EmbeddedModel):
     info: Optional[str]
 
 
-class NewAuthToken(pydantic.BaseModel):
+class NewServiceToken(pydantic.BaseModel):
     service: Service
     token: str
     info: Optional[str]

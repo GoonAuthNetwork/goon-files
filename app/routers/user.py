@@ -48,8 +48,9 @@ async def get_user(user_id: int) -> User:
     summary="Gets an ServiceToken for the specified user and service",
 )
 async def get_service_for_user(user_id: int, service: Service) -> ServiceToken:
-    query = {"userId": {"$eq": user_id}, "services.service": {"$eq": service.value}}
-    user: UserInDb = await db.engine.find_one(UserInDb, query)
+    # query = {"userId": {"$eq": user_id}, "services.service": {"$eq": service.value}}
+    # user: UserInDb = await db.engine.find_one(UserInDb, query)
+    user: UserInDb = await db.engine.find_one(UserInDb, UserInDb.userId == user_id)
 
     if user is None:
         raise HTTPException(404, "User not found")
@@ -64,7 +65,13 @@ async def get_service_for_user(user_id: int, service: Service) -> ServiceToken:
 @router.put(
     "/{user_id}/service", response_model=User, summary="Adds an AuthToken to the User"
 )
-async def add_service_for_user(user_id: int, new_authtoken: NewServiceToken) -> User:
+async def add_service_to_user(user_id: int, new_authtoken: NewServiceToken) -> User:
+    # pull the user
+    user: UserInDb = await db.engine.find_one(UserInDb, UserInDb.userId == user_id)
+
+    if user is None:
+        raise HTTPException(404, "User not found")
+
     # Create the auth token
     authtoken: ServiceToken = ServiceToken(
         service=new_authtoken.service, token=new_authtoken.token
@@ -73,14 +80,12 @@ async def add_service_for_user(user_id: int, new_authtoken: NewServiceToken) -> 
     if "info" in new_authtoken and len(new_authtoken.info) > 0:
         authtoken.info = new_authtoken.info
 
-    # pull the user
-    user: UserInDb = await db.engine.find(UserInDb, UserInDb.userId == user_id)
-
     # Check if we're updating
     for i in range(len(user.services)):
         if user.services[i].service == authtoken.service:
             user.services[i] = authtoken
-            return await db.engine.save(user)
+            saved_user = await db.engine.save(user)
+            return saved_user.to_basic_user()
 
     # Or else add it
     user.services.append(authtoken)

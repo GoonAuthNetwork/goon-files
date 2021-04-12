@@ -6,6 +6,7 @@ import pydantic
 
 class Service(str, Enum):
     DISCORD = "discord"
+    OTHER = "other"
 
 
 class ServiceToken(EmbeddedModel):

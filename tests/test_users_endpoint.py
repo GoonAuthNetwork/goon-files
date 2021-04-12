@@ -1,13 +1,16 @@
 from datetime import datetime
+import random
 
 from asgi_lifespan import LifespanManager
 from httpx import AsyncClient
 import pytest
 
 from app.main import app
-from app.models.service_token import Service, ServiceToken
-from app.models.user import NewUser, UserInDb
+from app.models.service_token import NewServiceToken, Service, ServiceToken
+from app.models.user import NewUser, User, UserInDb
 from app.mongodb import db, connect_to_mongo, close_mongo_connection
+
+from .utils import generate_username, is_sub_dict
 
 seed_users = [
     UserInDb(
@@ -69,16 +72,17 @@ async def async_client(seed_test_db):
 
 
 @pytest.mark.asyncio
-async def test_something(async_client):
+async def test_something(async_client: AsyncClient):
     response = await async_client.get("/")
     assert response.status_code == 200
     assert response.json() == {"message": "Hello root"}
 
 
 @pytest.mark.asyncio
-async def test_new_user_already_exists(async_client):
+async def test_new_user_already_exists(async_client: AsyncClient):
     # As of right now this should contain more than enough data for a NewUser
-    new_user = NewUser(**seed_users[0].dict())
+    user = random.choice(seed_users)
+    new_user = NewUser(**user.dict())
 
     response = await async_client.post(
         "/user/", content=new_user.json(), headers={"Content-Type": "application/json"}
@@ -89,12 +93,13 @@ async def test_new_user_already_exists(async_client):
 
 
 @pytest.mark.asyncio
-async def test_new_user(async_client):
+async def test_new_user(async_client: AsyncClient):
+    name = generate_username()
     new_user = NewUser(
         userId=420,
-        userName="Some Cool Guy",
+        userName=name,
         regDate=datetime.now(),
-        services=[ServiceToken(service=Service.DISCORD, token="Some Cool Guy#420")],
+        services=[ServiceToken(service=Service.DISCORD, token=f"{name}#420")],
     )
 
     response = await async_client.post(
@@ -102,11 +107,109 @@ async def test_new_user(async_client):
     )
 
     assert response.status_code == 200
-    assert all(
-        response.json().get(key, None) == val
-        for key, val in {
+    assert is_sub_dict(
+        response.json(),
+        {
             "permaBanned": None,
             "userId": 420,
-            "userName": "Some Cool Guy",
-        }.items()
+            "userName": name,
+        },
+    )
+
+
+@pytest.mark.asyncio
+async def test_get_user_not_found(async_client: AsyncClient):
+    response = await async_client.get("/user/420")
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": "User not found"}
+
+
+@pytest.mark.asyncio
+async def test_get_user(async_client: AsyncClient):
+    user = random.choice(seed_users)
+    response = await async_client.get(f"/user/{user.userId}")
+    returned_user = User(**response.json())
+
+    assert response.status_code == 200
+    assert user.userName == returned_user.userName
+
+
+@pytest.mark.asyncio
+async def test_get_service_for_user_not_found(async_client: AsyncClient):
+    response = await async_client.get("/user/420/service?service=discord")
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": "User not found"}
+
+
+@pytest.mark.asyncio
+async def test_get_service_for_user_service_not_found(async_client: AsyncClient):
+    user = random.choice(seed_users)
+    response = await async_client.get(f"/user/{user.userId}/service?service=other")
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Service not found for specified user"}
+
+
+@pytest.mark.asyncio
+async def test_get_service_for_user(async_client: AsyncClient):
+    user = random.choice(seed_users)
+    response = await async_client.get(f"/user/{user.userId}/service?service=discord")
+
+    service = ServiceToken(**response.json())
+
+    assert response.status_code == 200
+    assert service in user.services
+
+
+@pytest.mark.asyncio
+async def test_add_service_to_user_not_exist(async_client: AsyncClient):
+    token = NewServiceToken(service=Service.OTHER, token="RandomData")
+
+    response = await async_client.put(
+        "/user/420/service",
+        content=token.json(),
+        headers={"Content-Type": "application/json"},
+    )
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": "User not found"}
+
+
+@pytest.mark.asyncio
+async def test_add_service_to_user_update(async_client: AsyncClient):
+    user = random.choice(seed_users)
+    token = NewServiceToken(service=Service.DISCORD, token="RandomData")
+
+    response = await async_client.put(
+        f"/user/{user.userId}/service",
+        content=token.json(),
+        headers={"Content-Type": "application/json"},
+    )
+
+    returned_user = User(**response.json())
+
+    assert response.status_code == 200
+    assert user.userName == returned_user.userName
+    assert any(x.token == "RandomData" for x in returned_user.services)
+
+
+@pytest.mark.asyncio
+async def test_add_service_to_user_add(async_client: AsyncClient):
+    user = random.choice(seed_users)
+    token = NewServiceToken(service=Service.OTHER, token="RandomData")
+
+    response = await async_client.put(
+        f"/user/{user.userId}/service",
+        content=token.json(),
+        headers={"Content-Type": "application/json"},
+    )
+
+    returned_user = User(**response.json())
+
+    assert response.status_code == 200
+    assert user.userName == returned_user.userName
+    assert any(
+        x.token == "RandomData" and x.service == "other" for x in returned_user.services
     )

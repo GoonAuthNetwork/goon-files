@@ -1,5 +1,6 @@
 from datetime import datetime
 import random
+import urllib.parse
 
 from asgi_lifespan import LifespanManager
 from httpx import AsyncClient
@@ -89,7 +90,7 @@ async def test_new_user_already_exists(async_client: AsyncClient):
     )
 
     assert response.status_code == 409
-    assert response.json() == {"detail": "User already exists"}
+    assert response.json() == {"message": "User already exists"}
 
 
 @pytest.mark.asyncio
@@ -118,11 +119,33 @@ async def test_new_user(async_client: AsyncClient):
 
 
 @pytest.mark.asyncio
+async def test_find_user_by_service_not_found(async_client: AsyncClient):
+    response = await async_client.get("/user/?service=discord&token=invalid_token")
+
+    assert response.status_code == 404
+    assert response.json() == {"message": "User not found"}
+
+
+@pytest.mark.asyncio
+async def test_find_user_by_service(async_client: AsyncClient):
+    user = random.choice(seed_users)
+    service = urllib.parse.quote(user.services[0].service.value)
+    token = urllib.parse.quote(user.services[0].token)
+
+    response = await async_client.get(f"/user/?service={service}&token={token}")
+    assert response.status_code == 200
+
+    returned_user = User(**response.json())
+    assert user.userName == returned_user.userName
+    assert user.userId == returned_user.userId
+
+
+@pytest.mark.asyncio
 async def test_get_user_not_found(async_client: AsyncClient):
     response = await async_client.get("/user/420")
 
     assert response.status_code == 404
-    assert response.json() == {"detail": "User not found"}
+    assert response.json() == {"message": "User not found"}
 
 
 @pytest.mark.asyncio
@@ -140,7 +163,7 @@ async def test_get_service_for_user_not_found(async_client: AsyncClient):
     response = await async_client.get("/user/420/service?service=discord")
 
     assert response.status_code == 404
-    assert response.json() == {"detail": "User not found"}
+    assert response.json() == {"message": "User not found"}
 
 
 @pytest.mark.asyncio
@@ -149,7 +172,7 @@ async def test_get_service_for_user_service_not_found(async_client: AsyncClient)
     response = await async_client.get(f"/user/{user.userId}/service?service=other")
 
     assert response.status_code == 404
-    assert response.json() == {"detail": "Service not found for specified user"}
+    assert response.json() == {"message": "Service not found for specified user"}
 
 
 @pytest.mark.asyncio
@@ -174,7 +197,7 @@ async def test_add_service_to_user_not_exist(async_client: AsyncClient):
     )
 
     assert response.status_code == 404
-    assert response.json() == {"detail": "User not found"}
+    assert response.json() == {"message": "User not found"}
 
 
 @pytest.mark.asyncio

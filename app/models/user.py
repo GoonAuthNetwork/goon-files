@@ -13,7 +13,11 @@ from app.models.service_token import ServiceToken
 class User(pydantic.BaseModel):
     userId: int = pydantic.Field(..., title="SA User Id", gt=0)
     userName: str = pydantic.Field(
-        ..., title="SA Username", min_length=3, max_length=50, regex="^[\w-_ ]+$"
+        ...,
+        title="SA Username",
+        min_length=3,
+        max_length=50,
+        regex="^[a-zA-Z0-9-_ ]{3,50}$",
     )
     regDate: datetime = pydantic.Field(..., title="SA register date")
     permaBanned: Optional[datetime] = pydantic.Field(
@@ -28,7 +32,11 @@ class User(pydantic.BaseModel):
 class UserInDb(odmantic.Model):
     userId: int = odmantic.Field(..., title="SA User Id", gt=0)
     userName: str = odmantic.Field(
-        ..., title="SA Username", min_length=3, max_length=50, regex="^[\w-_ ]+$"
+        ...,
+        title="SA Username",
+        min_length=3,
+        max_length=50,
+        regex="^[a-zA-Z0-9-_ ]{3,50}$",
     )
     regDate: datetime = odmantic.Field(..., title="SA register date")
     permaBanned: Optional[datetime] = odmantic.Field(
@@ -55,7 +63,11 @@ class UserInDb(odmantic.Model):
 class NewUser(pydantic.BaseModel):
     userId: int = pydantic.Field(..., title="SA User Id", gt=0)
     userName: str = pydantic.Field(
-        ..., title="SA Username", min_length=3, max_length=50, regex="^[\w-_ ]+$"
+        ...,
+        title="SA Username",
+        min_length=3,
+        max_length=50,
+        regex="^[a-zA-Z0-9-_ ]{3,50}$",
     )
     regDate: datetime = pydantic.Field(..., title="SA register date")
     services: Optional[List[ServiceToken]] = pydantic.Field(

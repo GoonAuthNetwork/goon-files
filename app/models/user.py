@@ -16,8 +16,11 @@ class User(pydantic.BaseModel):
         ...,
         title="SA Username",
         min_length=3,
-        max_length=50,
-        regex="^[a-zA-Z0-9-_ ]{3,50}$",
+        max_length=100,
+        # TODO: Reimplement validation once userid api is added.
+        # Thanks SA for having absolutely no standards for valid usernames.
+        # max_length=50,
+        # regex="^[a-zA-Z0-9-_ ]{3,50}$",
     )
     regDate: datetime = pydantic.Field(..., title="SA register date")
     permaBanned: Optional[datetime] = pydantic.Field(
@@ -35,8 +38,11 @@ class UserInDb(odmantic.Model):
         ...,
         title="SA Username",
         min_length=3,
-        max_length=50,
-        regex="^[a-zA-Z0-9-_ ]{3,50}$",
+        max_length=100,
+        # TODO: Reimplement validation once userid api is added.
+        # Thanks SA for having absolutely no standards for valid usernames.
+        # max_length=50,
+        # regex="^[a-zA-Z0-9-_ ]{3,50}$",
     )
     regDate: datetime = odmantic.Field(..., title="SA register date")
     permaBanned: Optional[datetime] = odmantic.Field(
@@ -66,8 +72,11 @@ class NewUser(pydantic.BaseModel):
         ...,
         title="SA Username",
         min_length=3,
-        max_length=50,
-        regex="^[a-zA-Z0-9-_ ]{3,50}$",
+        max_length=100,
+        # TODO: Reimplement validation once userid api is added.
+        # Thanks SA for having absolutely no standards for valid usernames.
+        # max_length=50,
+        # regex="^[a-zA-Z0-9-_ ]{3,50}$",
     )
     regDate: datetime = pydantic.Field(..., title="SA register date")
     services: Optional[List[ServiceToken]] = pydantic.Field(
